@@ -13,6 +13,7 @@ public class MinesweeperGame {
     private String[][] gameGrid;
     private String[][] mineGrid;
     private int round;
+    private double score;
 
     /**
      * Constructor method for MinesweeperGame.
@@ -62,9 +63,52 @@ public class MinesweeperGame {
     /**
      * Prompts user for command.
      */
-    public void promptUser() {
-        // TODO
+    public void promptUser() throws NumberFormatException, IllegalArgumentException {
+        System.out.print("minesweeper-alpha: ");
+        String fullCommand = stdIn.nextLine();
+        Scanner commandScan = new Scanner(fullCommand);
+        String userCommand = commandScan.next().toLowerCase();
+        // Checks if the user commands that use int tokens have exactly two int tokens, throws exception if not.
+        if (userCommand.equals("r") || userCommand.equals("reveal") || userCommand.equals("m") || userCommand.equals("mark") || userCommand.equals("g") || userCommand.equals("guess")) {
+            hasTwoIntTokens(fullCommand);
+        }
+        switch (userCommand) {
+            case "r":
+            case "reveal":
+                int revealRow = commandScan.nextInt();
+                int revealCol = commandScan.nextInt();
+                if (isInBounds(revealRow, revealCol)) {
+                    if (!containsMine(revealRow, revealCol)) {
+
+                    } else {
+                        printLoss();
+                    }
+                } else {
+
+                }
+                break;
+        }
     } // promptUser
+
+    public boolean hasTwoIntTokens(String command) throws NumberFormatException, IllegalArgumentException {
+        String[] tokens = command.trim().split("\\s+");
+
+        if (tokens.length == 3) {
+            Integer.parseInt(tokens[1]);
+            Integer.parseInt(tokens[2]);
+            return true;
+        } else if (tokens.length > 3) {
+            throw new IllegalArgumentException();
+        } else {
+            throw new NumberFormatException();
+        }
+    } // hasTwoIntTokens
+
+    public int getNumAdjacentMines(int selectedRow, int selectedCol) {
+
+    } // getNumAdjacentMines
+
+    public boolean isMineInBounds
 
     /**
      * Evaluates whether the game has been won or not.
@@ -85,7 +129,7 @@ public class MinesweeperGame {
 //        System.out.println("| (_| | (_| | | | | | |  __/ | (_) \ V /  __/ |");
 //        System.out.println(" \__, |\__,_|_| |_| |_|\___|  \___/ \_/ \___|_|");
 //        System.out.println(" |___/");
-
+        System.exit(0);
     } // printLoss
 
     /**
@@ -116,19 +160,43 @@ public class MinesweeperGame {
     public void play() {
         while (!isWon()) {
             printMineField();
-            System.out.print("minesweeper-alpha: ");
-            String fullCommand = stdIn.nextLine();
-            Scanner commandScan = new Scanner(fullCommand);
-            String userCommand = commandScan.next().toLowerCase();
-            switch (userCommand) {
-                case "r":
-                case "reveal":
-
-
-
+            try {
+                promptUser();
+            } catch (NumberFormatException nfe) {
+                System.err.println();
+                System.err.println("Invalid Command: null");
+            } catch (IllegalArgumentException iae) {
+                System.err.println();
+                System.err.println("Invalid Command: Command not recognized!");
             }
         }
     } // play
+
+    public boolean containsMine(int selectedRow, int selectedCol) {
+        if (mineGrid[selectedRow][selectedCol].equals("<X>")) {
+            return true;
+        } else {
+            return false;
+        }
+    } // containsMine
+    public boolean isInBounds(int selectedRow, int selectedCol) {
+        if (selectedRow < rows && selectedRow >= 0 && selectedCol < cols && selectedCol >= 0) {
+            return true;
+        }
+        else {
+            int invalidIndex, invalidDimension;
+            if (selectedRow < 0 || selectedRow >= rows) {
+                invalidIndex = selectedRow;
+                invalidDimension = rows;
+            } else {
+                invalidIndex = selectedCol;
+                invalidDimension = cols;
+            }
+            System.err.println();
+            System.err.println("Invalid Command: Index " + invalidIndex + " out of bounds for length " + invalidDimension);
+            return false;
+        }
+    } // isInBounds
 
     public void readSeed(String seedPath) {
 
