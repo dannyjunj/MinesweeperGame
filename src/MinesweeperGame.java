@@ -4,6 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * The MinesweeperAlpha class represents a game of Minesweeper with interactive gameplay.
+ * It allows the user to play through a grid of cells, where they can reveal, mark, or guess cells.
+ * The game generates a grid based on a seed file and tracks progress through rounds. Mines are placed
+ * randomly, and the user must avoid stepping on them while uncovering safe cells. The game ends when either all safe
+ * cells are uncovered (win) or a mine is revealed (loss).
+ *
+ * <p>The class includes mechanisms for handling invalid user commands, bounds checking, and error reporting.
+ * It also contains methods for managing game state, printing the grid, and tracking the user's progress through rounds.</p>
+ *
+ * <p>This class depends on a seed file to generate a custom grid. The file should contain integer values specifying
+ * the number of rows, columns, the number of mines, and mine locations. If the file is improperly formatted or the
+ * values are out of bounds, the program will terminate with an error message.</p>
+ */
 public class MinesweeperGame {
 
     private Scanner stdIn;
@@ -14,18 +28,19 @@ public class MinesweeperGame {
     private String[][] mineGrid;
     private int round;
     private double score;
+    private boolean showNoFog;
 
     /**
-     * Constructor method for MinesweeperGame.
+     * This is the constructor method for MinesweeperGame. Creates an instance of MinesweeperGame using {@code stdIn}
+     * as the input scanner and passes through {@code seedPath} to the readSeed method for variable initializations.
      *
-     *
-     *
-     *
-     *
+     * @param stdIn - The scanner used for standard input.
+     * @param seedPath - The path to the seed used for instance variable initializations.
      */
     MinesweeperGame(Scanner stdIn, String seedPath) {
+        this.stdIn = stdIn;
         readSeed(seedPath);
-    } // Constructor
+    } // MinesweeperGame
 
     /**
      * Prints welcome banner.
@@ -40,30 +55,47 @@ public class MinesweeperGame {
     } // printWelcome
 
     /**
-     * Prints current mine field.
+     * Prints current minefield if the no-fog command is not used prior.
      */
     public void printMineField() {
-        System.out.println();
-        System.out.println("Rounds Completed: " + round);
-        System.out.println();
-        for (int i = 0; i < rows; i++) {
-            System.out.print(" " + i + " |");
-            for (int j = 0; j < cols; j++) {
-                System.out.print(gameGrid[i][j] + "|");
+        if (!showNoFog) {
+            System.out.println();
+            System.out.println("Rounds Completed: " + round);
+            System.out.println();
+            for (int i = 0; i < rows; i++) {
+                System.out.print(" " + i + " |");
+                for (int j = 0; j < cols; j++) {
+                    System.out.print(gameGrid[i][j] + "|");
+                }
+                System.out.println();
+            }
+            System.out.print("     ");
+            for (int i = 0; i < cols; i++) {
+                System.out.print(i + "   ");
             }
             System.out.println();
-        }
-        System.out.print("     ");
-        for (int i = 0; i < cols; i++) {
-            System.out.print(i + "   ");
         }
         System.out.println();
     } // printMineField
 
     /**
-     * Prompts user for command.
+     * Prompts user for a command input in the Minesweeper game and executes the corresponding action.
+     *
+     * <p>This method reads a command from standard input, processes it, and modifies the game state accordingly.
+     * It supports the following commands:
+     * <ul>
+     *     <li>Reveal: r/reveal row col - Reveals the cell at the given row and column.</li>
+     *     <li>Mark: m/mark row col - Marks the cell at the given row and column with a flag.</li>
+     *     <li>Guess: g/guess row col - Places a question mark on the specified cell.</li>
+     *     <li>Help: h/help - Displays available commands.</li>
+     *     <li>Quit: q/quit - Exits the game.</li>
+     *     <li>No Fog: nofog - Temporarily reveals all mines.</li>
+     * </ul>
+     *
+     * @throws IllegalArgumentException if user does not provide a valid command.
+     * @throws ArrayIndexOutOfBoundsException if user's command is not within bounds of the game grid.
      */
-    public void promptUser() throws NumberFormatException, IllegalArgumentException, ArrayIndexOutOfBoundsException {
+    public void promptUser() throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
         System.out.print("minesweeper-alpha: ");
         String fullCommand = stdIn.nextLine();
         Scanner commandScan = new Scanner(fullCommand);
@@ -109,26 +141,28 @@ public class MinesweeperGame {
 
             case "h":
             case "help":
+                System.out.println();
                 System.out.println("Commands Available...");
                 System.out.println(" - Reveal: r/reveal row col");
                 System.out.println(" -   Mark: m/mark   row col");
                 System.out.println(" -  Guess: g/guess  row col");
                 System.out.println(" -   Help: h/help");
                 System.out.println(" -   Quit: q/quit");
-                System.out.println();
                 round++;
                 break;
 
             case "q":
             case "quit":
+                System.out.println();
                 System.out.println("Quitting the game...");
                 System.out.println("Bye!");
                 System.exit(0);
                 break;
 
             case "nofog":
-                printNoFogField();
                 round++;
+                showNoFog = true;
+                printNoFogField();
                 break;
 
             default:
@@ -136,14 +170,34 @@ public class MinesweeperGame {
         }
     } // promptUser
 
+    /**
+     * Prints the minefield with all mines temporarily revealed.
+     */
     public void printNoFogField() {
+        System.out.println();
+        System.out.println("Rounds Completed: " + round);
+        System.out.println();
         for (int i = 0; i < rows; i++) {
             System.out.print(" " + i + " |");
             for (int j = 0; j < cols; j++) {
                 if (gameGrid[i][j].equals(" ? ")) {
-                    System.out.print("<?>|" );
+                    if (mineGrid[i][j].equals("<X>")) {
+                        System.out.print("<?>|");
+                    } else {
+                        System.out.print(gameGrid[i][j] + "|");
+                    }
                 } else if (gameGrid[i][j].equals(" F ")) {
-                    System.out.print("<F>|");
+                    if (mineGrid[i][j].equals("<X>")) {
+                        System.out.print("<F>|");
+                    } else {
+                        System.out.print(gameGrid[i][j] + "|");
+                    }
+                } else if (gameGrid[i][j].equals("   ")) {
+                    if (mineGrid[i][j].equals("<X>")) {
+                        System.out.print("< >|");
+                    } else {
+                        System.out.print(gameGrid[i][j] + "|");
+                    }
                 } else {
                     System.out.print(gameGrid[i][j] + "|");
                 }
@@ -155,22 +209,36 @@ public class MinesweeperGame {
             System.out.print(i + "   ");
         }
         System.out.println();
-    }
+    } // printNoFogField
 
-    public boolean hasTwoIntTokens(String command) throws NumberFormatException, IllegalArgumentException {
+    /**
+     * Takes in the user's full command and parses it into a String array, which is then used to determine
+     * whether the full command is valid and contains two int tokens. Returns {@code true} if the full command is valid
+     * and contains the appropriate amount of tokens.
+     *
+     * @param command The user's full command.
+     * @return {@code true} if user's full command is valid and contains two int tokens.
+     * @throws IllegalArgumentException if user's full command is not valid or does not contain two int tokens.
+     */
+    public boolean hasTwoIntTokens(String command) throws IllegalArgumentException {
         String[] tokens = command.trim().split("\\s+");
 
         if (tokens.length == 3) {
             Integer.parseInt(tokens[1]);
             Integer.parseInt(tokens[2]);
             return true;
-        } else if (tokens.length > 3) {
-            throw new IllegalArgumentException();
         } else {
-            throw new NumberFormatException();
+            throw new IllegalArgumentException();
         }
     } // hasTwoIntTokens
 
+    /**
+     * Returns how many mines are adjacent to the user's selected cell.
+     *
+     * @param selectedRow The row index of the cell to check.
+     * @param selectedCol The column index of the cell to check.
+     * @return The number of mines adjacent to the user's selected cell.
+     */
     public int getNumAdjacentMines(int selectedRow, int selectedCol) {
         int adjMine = 0;
         if (isMineInBounds(selectedRow - 1, selectedCol - 1)) {
@@ -216,6 +284,15 @@ public class MinesweeperGame {
         return adjMine;
     } // getNumAdjacentMines
 
+    /**
+     * Determines whether a cell's indices are within the bounds of the game grid. Used exclusively by the
+     * {@link #getNumAdjacentMines(int, int)} method.
+     *
+     * @param mineRow The row index of the cell to check.
+     * @param mineCol The column index of the cell to check.
+     * @return {@code true} if the specified coordinates are within the bounds of the grid,
+     *         {@code false} otherwise.
+     */
     public boolean isMineInBounds(int mineRow, int mineCol) {
         if (mineRow < rows && mineRow >= 0 && mineCol < cols && mineCol >= 0) {
             return true;
@@ -225,9 +302,14 @@ public class MinesweeperGame {
     } // isMineInBounds
 
     /**
-     * Evaluates whether the game has been won or not.
+     * Evaluates whether the game has been won or not based off of two conditions:
+     * <ul>
+     *     <li>All cells containing mines are definitely marked (F).</li>
+     *     <li>All cells not containing mines are revealed.</li>
+     * </ul>
      *
-     * @returns {@code} true if and only if all conditions are met to win; returns {@code} false otherwise.
+     * @returns {@code} true if and only if all conditions are met to win,
+     *          {@code} false otherwise.
      */
     public boolean isWon() {
         boolean winning = true;
@@ -249,9 +331,11 @@ public class MinesweeperGame {
     } // isWon
 
     /**
-     * Prints loss banner.
+     * Displays a message indicating the player has lost the game by revealing a mine and then terminates the
+     * program using {@code System.exit(0)}.
      */
     public void printLoss() {
+        System.out.println();
         System.out.println(" Oh no... You revealed a mine!");
         System.out.println("  __ _  __ _ _ __ ___   ___    _____   _____ _ __");
         System.out.println(" / _` |/ _` | '_ ` _ \\ / _ \\  / _ \\ \\ / / _ \\ '__|");
@@ -262,7 +346,9 @@ public class MinesweeperGame {
     } // printLoss
 
     /**
-     * Prints win banner with player's score.
+     * Displays a winning message when the player successfully wins the game. The player's score is also displayed which
+     * is calculated based on the number of rounds taken to complete the game. The program then terminates using
+     * {@code System.exit(0)}.
      */
     public void printWin() {
         System.out.println(" ░░░░░░░░░▄░░░░░░░░░░░░░░▄░░░░ \"So Doge\"");
@@ -289,20 +375,31 @@ public class MinesweeperGame {
         System.exit(0);
     } // printWin
 
+    /**
+     * Controls the main game loop for Minesweeper.
+     *
+     * <p>The game continues running until the player wins by correctly marking all mines.
+     * In each iteration of the loop, the minefield is printed, the player's input is
+     * requested via {@code promptUser()}, and errors are handled gracefully. If the
+     * player provides an invalid command, appropriate error messages are displayed.</p>
+     *
+     * <p>If the player wins the game, {@code printWin()} is called to display the
+     * victory message and score before terminating the program.</p>
+     */
     public void play() {
         while (!isWon()) {
             printMineField();
+            showNoFog = false;
             try {
                 promptUser();
             } catch (ArrayIndexOutOfBoundsException aioobe) {
-                System.err.println();
                 System.err.println("Invalid Command: " + aioobe.getMessage());
-            } catch (NumberFormatException nfe) {
                 System.err.println();
-                System.err.println("Invalid Command: null");
+                continue;
             } catch (IllegalArgumentException iae) {
-                System.err.println();
                 System.err.println("Invalid Command: Command not recognized!");
+                System.err.println();
+                continue;
             }
             if (isWon()) {
                 printWin();
@@ -310,6 +407,14 @@ public class MinesweeperGame {
         }
     } // play
 
+    /**
+     * Checks if the specified cell contains a mine.
+     *
+     * @param selectedRow The row index of the cell to check.
+     * @param selectedCol The column index of the cell to check.
+     * @return {@code true} if the specified cell contains a mine,
+     *         {@code false} otherwise.
+     */
     public boolean containsMine(int selectedRow, int selectedCol) {
         if (mineGrid[selectedRow][selectedCol].equals("<X>")) {
             return true;
@@ -318,27 +423,27 @@ public class MinesweeperGame {
         }
     } // containsMine
 
+    /**
+     * Checks if the specified cell is within the bounds of the game grid.
+     *
+     * @param selectedRow The row index of the cell to check.
+     * @param selectedCol The column index of the cell to check.
+     * @return {@code true} if the cell is within the bounds of the game grid.
+     * @throws ArrayIndexOutOfBoundsException if the specified row or column is out of bounds of the game grid.
+     */
     public boolean isInBounds(int selectedRow, int selectedCol) throws ArrayIndexOutOfBoundsException {
-//        if (selectedRow < rows && selectedRow >= 0 && selectedCol < cols && selectedCol >= 0) {
-//            return true;
-//        }
-//        else {
-//            int invalidIndex, invalidDimension;
-//            if (selectedRow < 0 || selectedRow >= rows) {
-//                invalidIndex = selectedRow;
-//                invalidDimension = rows;
-//            } else {
-//                invalidIndex = selectedCol;
-//                invalidDimension = cols;
-//            }
-//            System.err.println();
-//            System.err.println("Invalid Command: Index " + invalidIndex + " out of bounds for length " + invalidDimension);
-//            return false;
-//        }
         String testForInBounds = gameGrid[selectedRow][selectedCol];
         return true;
     } // isInBounds
 
+    /**
+     * Reads a seed configuration file to initialize the game grid and mine grid.
+     *
+     * @param seedPath The path to the seed file containing the configuration.
+     * @throws IllegalArgumentException if a non-integer value is encountered in the seed file.
+     * @throws FileNotFoundException if the seed file is not found.
+     * @throws ArrayIndexOutOfBoundsException if there is an unexpected number of tokens in the seed file.
+     */
     public void readSeed(String seedPath) {
 
         List<Integer> seedNumbers = new ArrayList<>();
@@ -368,7 +473,7 @@ public class MinesweeperGame {
             }
 
             numMines = config[2];
-            if (numMines < 1 || numMines > (rows * cols - 1)); {
+            if (numMines < 1 || numMines > (rows * cols - 1)) {
                 System.err.println();
                 System.err.println("Seed File Malformed Error: Please input a valid number of mines.");
                 System.exit(3);
@@ -383,7 +488,10 @@ public class MinesweeperGame {
                     gameGrid[i][j] = "   ";
                 }
             }
-            for (int i = 3; i < config.length; i++) {
+
+            boolean enoughMines = false;
+            int mineCount = 0;
+            for (int i = 3; i < config.length && !enoughMines; i++) {
                 if (i % 2 != 0) {
                     if (config[i] > rows || config[i] < 0 || config[i + 1] > cols || config[i + 1] < 0) {
                         System.err.println();
@@ -391,6 +499,10 @@ public class MinesweeperGame {
                         System.exit(3);
                     } else {
                         mineGrid[config[i]][config[i + 1]] = "<X>";
+                        mineCount++;
+                    }
+                    if (mineCount == numMines) {
+                        enoughMines = true;
                     }
                 }
             }
