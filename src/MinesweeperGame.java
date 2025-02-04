@@ -34,8 +34,8 @@ public class MinesweeperGame {
      * This is the constructor method for MinesweeperGame. Creates an instance of MinesweeperGame using {@code stdIn}
      * as the input scanner and passes through {@code seedPath} to the readSeed method for variable initializations.
      *
-     * @param stdIn - The scanner used for standard input.
-     * @param seedPath - The path to the seed used for instance variable initializations.
+     * @param stdIn The scanner used for standard input.
+     * @param seedPath The path to the seed used for instance variable initializations.
      */
     MinesweeperGame(Scanner stdIn, String seedPath) {
         this.stdIn = stdIn;
@@ -49,13 +49,13 @@ public class MinesweeperGame {
         System.out.println("        _");
         System.out.println("  /\\/\\ (F)_ __   ___  _____      _____  ___ _ __   ___ _ __");
         System.out.println(" /    \\| | '_ \\ / _ \\/ __\\ \\ /\\ / / _ \\/ _ \\ '_ \\ / _ \\ '__|");
-        System.out.println("/ /\\/\\ \\ | | | |  __/\\__ \\ V  V /  __/  __/ |_) |  __/ |");
+        System.out.println("/ /\\/\\ \\ | | | |  __/\\__ \\\\ V  V /  __/  __/ |_) |  __/ |");
         System.out.println("\\/    \\/_|_| |_|\\___||___/ \\_/\\_/ \\___|\\___| .__/ \\___|_|");
         System.out.println("                             ALPHA EDITION |_| v2025.sp");
     } // printWelcome
 
     /**
-     * Prints current minefield if the no-fog command is not used prior.
+     * Prints current minefield and the number of rounds if the no-fog command is not used prior.
      */
     public void printMineField() {
         if (!showNoFog) {
@@ -171,7 +171,7 @@ public class MinesweeperGame {
     } // promptUser
 
     /**
-     * Prints the minefield with all mines temporarily revealed.
+     * Prints the minefield and the number of rounds with all mines temporarily revealed.
      */
     public void printNoFogField() {
         System.out.println();
@@ -482,30 +482,7 @@ public class MinesweeperGame {
             mineGrid = new String[rows][cols];
             gameGrid = new String[rows][cols];
 
-            for (int i = 0; i < rows; i++) { // Initializes both gameGrid and mineGrid
-                for (int j = 0; j < cols; j++) {
-                    mineGrid[i][j] = " O ";
-                    gameGrid[i][j] = "   ";
-                }
-            }
-
-            boolean enoughMines = false;
-            int mineCount = 0;
-            for (int i = 3; i < config.length && !enoughMines; i++) {
-                if (i % 2 != 0) {
-                    if (config[i] > rows || config[i] < 0 || config[i + 1] > cols || config[i + 1] < 0) {
-                        System.err.println();
-                        System.err.println("Seed File Malformed Error: Mine location out of bounds.");
-                        System.exit(3);
-                    } else {
-                        mineGrid[config[i]][config[i + 1]] = "<X>";
-                        mineCount++;
-                    }
-                    if (mineCount == numMines) {
-                        enoughMines = true;
-                    }
-                }
-            }
+            initializeGrids(config);
 
         } catch (FileNotFoundException fnfe) {
             System.err.println();
@@ -521,5 +498,32 @@ public class MinesweeperGame {
             System.exit(3);
         }
     } // readSeed
+
+    public void initializeGrids(int[] config) {
+        for (int i = 0; i < rows; i++) { // Initializes both gameGrid and mineGrid
+            for (int j = 0; j < cols; j++) {
+                mineGrid[i][j] = " O ";
+                gameGrid[i][j] = "   ";
+            }
+        }
+
+        boolean enoughMines = false;
+        int mineCount = 0;
+        for (int i = 3; i < config.length && !enoughMines; i++) {
+            if (i % 2 != 0) {
+                if (config[i] > rows || config[i] < 0 || config[i + 1] > cols || config[i + 1] < 0) {
+                    System.err.println();
+                    System.err.println("Seed File Malformed Error: Mine location out of bounds.");
+                    System.exit(3);
+                } else {
+                    mineGrid[config[i]][config[i + 1]] = "<X>";
+                    mineCount++;
+                }
+                if (mineCount == numMines) {
+                    enoughMines = true;
+                }
+            }
+        }
+    } // initializeGrids
 
 } // MinesweeperGame
